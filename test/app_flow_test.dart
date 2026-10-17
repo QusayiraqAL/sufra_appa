@@ -139,6 +139,22 @@ void main() {
     Navigator.of(tester.element(find.byType(RootGate, skipOffstage: false))).pop();
     await _settle(tester);
 
+    // حذف طلب: سجل الملغاة ← تفاصيل الطلب ← «احذف الطلب» ← التأكيد
+    await reveal(find.text('الملغاة (1)'));
+    await tester.tap(find.text('الملغاة (1)'));
+    await shot('05b-cancelled');
+    await tester.tap(find.textContaining('1035').last);
+    await _settle(tester);
+    await reveal(find.text('احذف الطلب'));
+    await tester.tap(find.text('احذف الطلب'));
+    await shot('05c-delete-confirm');
+    await tester.tap(find.widgetWithText(FilledButton, 'احذف'));
+    await _settle(tester);
+    expect(store.db.orders.where((o) => o.orderNumber == 1035), isEmpty);
+    expect(find.text('لا طلبات ملغاة'), findsOneWidget);
+    Navigator.of(tester.element(find.byType(RootGate, skipOffstage: false))).pop();
+    await _settle(tester);
+
     await open(ToolId.overview, '06-overview');
     await open(ToolId.menu, '07-menu');
 
@@ -222,6 +238,15 @@ void main() {
     // الكاشير يرى أداتين فقط: الطلبات ومنيو العميل
     expect(find.text('المنيو الورقي'), findsNothing);
     expect(find.text('التقارير'), findsNothing);
+    // ويفتح الطلب ولا يجد زر حذفه — الحذف لصاحب المطعم وحده
+    await open(ToolId.orders, '23b-orders-staff');
+    await tester.tap(find.textContaining('1042').first);
+    await shot('23c-order-detail-staff');
+    expect(find.text('اطبع'), findsOneWidget);
+    expect(find.text('احذف الطلب'), findsNothing);
+    Navigator.of(tester.element(find.byType(RootGate, skipOffstage: false))).pop();
+    nav().goHome();
+    await _settle(tester);
 
     // ============ مشرف المنصة ============
     store.signOut();

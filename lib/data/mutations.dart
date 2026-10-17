@@ -641,6 +641,20 @@ extension Mutations on DataStore {
     });
   }
 
+  /// حذف طلب نهائيًا مع بنوده وخياراتها. عدّاد الأرقام لا يتراجع: رقم الطلب
+  /// المحذوف لا يُعطى لطلب جديد، فلا يلتبس إيصال قديم بطلب آخر.
+  void deleteOrder(String orderId) {
+    mutate((db) {
+      final itemIds = {
+        for (final i in db.orderItems)
+          if (i.orderId == orderId) i.id,
+      };
+      db.orderItemOptions.removeWhere((o) => itemIds.contains(o.orderItemId));
+      db.orderItems.removeWhere((i) => i.orderId == orderId);
+      db.orders.removeWhere((o) => o.id == orderId);
+    });
+  }
+
   /* ===================== الموظفون ===================== */
 
   Result<String> addStaff(

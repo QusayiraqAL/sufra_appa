@@ -203,6 +203,51 @@ void main() {
     });
   });
 
+  group('حذف الطلب', () {
+    final store = DataStore.memory();
+    final rest = rukn(store);
+    // #1041: بنوده لها خيارات، فيُفحص أن الحذف يصل لكل الجداول الثلاثة
+    final target = getOrderWithItems(store.db, 'ord_1')!;
+    final itemIds = {for (final i in target.items) i.item.id};
+    final countBefore = getOrders(store.db, rest.id).length;
+    final seqBefore = store.db.orderSeq[rest.id]!;
+    store.deleteOrder(target.id);
+
+    test('الطلب المختار فيه بنود بخيارات', () {
+      expect(target.items.any((i) => i.options.isNotEmpty), isTrue);
+    });
+
+    test('الطلب اختفى وبقية الطلبات باقية', () {
+      expect(getOrderWithItems(store.db, target.id), isNull);
+      expect(getOrders(store.db, rest.id).length, countBefore - 1);
+    });
+
+    test('بنوده وخياراتها حُذفت معه', () {
+      expect(store.db.orderItems.where((i) => itemIds.contains(i.id)), isEmpty);
+      expect(store.db.orderItemOptions.where((o) => itemIds.contains(o.orderItemId)), isEmpty);
+    });
+
+    test('رقمه لا يُعطى لطلب جديد', () {
+      final next = store.createOrder(
+        CreateOrderInput(
+          restaurantId: rest.id,
+          type: OrderType.pickup,
+          tableId: null,
+          customerName: 'تجربة',
+          customerPhone: '0551112223',
+          address: '',
+          note: '',
+          lines: const [
+            CartLine(key: 'a', dishId: 'dish_1', qty: 2, note: '', selections: []),
+            CartLine(key: 'b', dishId: 'dish_26', qty: 1, note: '', selections: []),
+          ],
+        ),
+      );
+      expect(next.ok, isTrue, reason: next.error);
+      expect(next.data!.number, seqBefore + 1);
+    });
+  });
+
   group('رفض الطلبات غير الصالحة', () {
     final store = DataStore.memory();
     final rest = rukn(store);

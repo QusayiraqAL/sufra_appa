@@ -617,10 +617,12 @@ class _OrderDetailBody extends StatelessWidget {
                     'الجوال',
                     InkWell(
                       onTap: () => launchUrl(Uri.parse('tel:${o.customerPhone}')),
-                      child: Row(
+                      // بخط الجوال المكبّر ينزل الرقم لسطر ثانٍ بدل أن يتجاوز عموده
+                      child: Wrap(
+                        spacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Icon(Icons.call_rounded, size: 15, color: p.saffron),
-                          const SizedBox(width: 4),
                           Text(
                             ltr(o.customerPhone),
                             style: txt(14.5, color: p.saffron, weight: FontWeight.w600),
@@ -745,6 +747,18 @@ class _OrderDetailBody extends StatelessWidget {
             ],
           ),
         ),
+        // الحذف لصاحب المطعم وحده: الكاشير يكتفي بالإلغاء، فلا يختفي طلب قبض
+        // ثمنه من التقارير
+        if (sessionOf(db).profile?.role == Role.owner) ...[
+          const SizedBox(height: 18),
+          AppButton(
+            label: 'احذف الطلب',
+            icon: Icons.delete_outline_rounded,
+            tone: BtnTone.danger,
+            expand: true,
+            onPressed: () => _deleteOrder(context, o),
+          ),
+        ],
       ],
     );
   }
@@ -870,6 +884,30 @@ class _OrderDetailActions extends StatelessWidget {
       ],
     );
   }
+}
+
+/// الحذف لا رجوع عنه — بخلاف الإلغاء — فيمرّ بنافذة تأكيد تقترح «ألغِ» بدلًا
+/// منه للطلب الذي ما زال مفتوحًا.
+Future<void> _deleteOrder(BuildContext context, Order o) async {
+  final number = ltr('#${o.orderNumber}');
+  final ok = await confirmAction(
+    context,
+    title: 'حذف الطلب $number',
+    body: switch (o.status) {
+      OrderStatus.cancelled => 'سيُحذف من سجل الملغاة نهائيًا ولن يمكن إعادته.',
+      OrderStatus.completed => 'سيُحذف نهائيًا ويخرج من المبيعات والتقارير.',
+      _ =>
+        'سيُحذف نهائيًا ويخرج من شاشة الطلبات والتقارير. إن تراجع العميل عن طلبه فاستخدم «ألغِ» بدل الحذف — يبقى في سجل الملغاة وتعيده بضغطة.',
+    },
+  );
+  if (!ok || !context.mounted) return;
+  final store = context.read<DataStore>();
+  final sheet = ModalRoute.of(context);
+  Navigator.pop(context);
+  // يُحذف بعد نزول اللوح لا قبله، حتى لا ينكمش محتواه وهو ينزل
+  await sheet?.completed;
+  store.deleteOrder(o.id);
+  toast('حُذف الطلب $number');
 }
 
 Future<void> _showCancelled(BuildContext context, List<OrderWithItems> initial, Restaurant restaurant) {
