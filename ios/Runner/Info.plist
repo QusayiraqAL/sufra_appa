@@ -6,6 +6,8 @@
 	<string>لاختيار صور الأطباق وشعار المطعم وغلافه من معرض الصور.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>لتصوير أطباقك مباشرة وإضافتها للمنيو.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>لحفظ الصور التي تشاركها من التطبيق، كالمنيو والإيصالات، في معرض الصور.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>tel</string>
@@ -17,9 +19,10 @@
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>ar</string>
-	
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>CFBundleDisplayName</key>
-	<string>سُفرة</string>
+	<string>منيو لك</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,7 +30,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>flutter_application_1</string>
+	<string>منيو لك</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

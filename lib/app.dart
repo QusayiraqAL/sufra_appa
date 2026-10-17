@@ -33,7 +33,8 @@ class SufraApp extends StatelessWidget {
       child: Selector<AppPrefs, ThemeMode>(
         selector: (_, p) => p.themeMode,
         builder: (context, themeMode, _) => MaterialApp(
-          title: 'سُفرة',
+          // اسمه في قائمة التطبيقات المفتوحة على أندرويد — مطابق لاسمه تحت الأيقونة
+          title: 'منيو لك',
           debugShowCheckedModeBanner: false,
           navigatorKey: navigatorKey,
           scaffoldMessengerKey: messengerKey,
